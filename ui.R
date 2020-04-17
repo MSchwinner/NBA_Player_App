@@ -3,15 +3,9 @@
 # Header -----------------------------------------------------------------------
 
 header <- shinydashboard::dashboardHeader(
-  title = "BILLA Digital My title",
-  titleWidth = 310,
-  shinydashboard::dropdownMenu(type = "messages", badgeStatus = "danger",
-                               shinydashboard::notificationItem(icon = shiny::icon("envelope"),
-                                                                status = "danger",
-                                                                "Email author",
-                                                                href = "mailto:digital.analytics@billa.at")
+  title = "NBA Player Performance",
+  titleWidth = 310
   )
-)
 
 
 # Sidebar ----------------------------------------------------------------------
@@ -20,47 +14,49 @@ sidebar <- shinydashboard::dashboardSidebar(
   
   width = 350,
   
-  shiny::tags$head(shiny::tags$link(rel = "stylesheet", type = "text/css", href = "billa_design.css")),
-  
   # hide the default logout panel
   shiny::tags$head(shiny::tags$style(shiny::HTML('.shiny-server-account { display: none; }'))),
   
   shiny::uiOutput("userpanel"),
   
-  shiny::h5(shiny::HTML('&emsp;'), 'Parameter auswählen und auf "Aktualisieren" klicken:'),
-  
-  shiny::selectInput(inputId = 'species',
-                     label = 'Species:',
-                     choices = all_species,
-                     selected = NA,
-                     multiple = TRUE
+  fluidRow(
+    column(12, align = "center", uiOutput("player_photo"))
   ),
   
-  shinyBS::bsTooltip(id = 'species',
-                     title = paste('Wenn das Feld leer ist, sind alle Schwertlilien',
-                                   'Spezies ausgewählt.', sep = ' '),
-                     trigger = 'hover',
-                     placement = 'right'
+  shiny::br(),
+  
+  shiny::selectInput(inputId = 'players',
+                     label = 'Player:',
+                     choices = players$name,
+                     selected = "LeBron James",
+                     multiple = FALSE
   ),
   
-  shiny::actionButton(inputId = 'update', label = 'Aktualisieren'),
+  shiny::selectInput(inputId = 'data_type',
+                     label = 'Data:',
+                     choices = c("Base", "Advanced", "Misc", "Scoring", "Usage"),
+                     selected = "Base",
+                     multiple = FALSE
+  ),
+  
+  shiny::selectInput(inputId = 'season_type',
+                     label = 'Season:',
+                     choices = c("Regular+Season", "Playoffs"),
+                     selected = "Regular+Season",
+                     multiple = FALSE
+  ),
+  
+  
+  # shiny::actionButton(inputId = 'update', label = 'Update Data'),
   
   shiny::br(),
   
   shinydashboard::sidebarMenu(
     
-    shinydashboard::menuItem(text = 'Petalen', tabName = 'petalen',
-                             icon = shiny::icon("compress")),
-    shinydashboard::menuItem(text = 'Sepalen', tabName = 'sepalen',
-                             icon = shiny::icon("expand")),
-    shinydashboard::menuItem(text = 'Dokumentation', tabName = 'dokumentation',
-                             icon = shiny::icon("question"))
+    shinydashboard::menuItem(text = 'Tab1', tabName = 'tab1',
+                             icon = shiny::icon("compress"))
     
   ),
-  
-  shiny::br(), shiny::br(),  # HTML line breaks (also <br> within a string)
-  
-  shiny::h4(shiny::HTML('&emsp;'), "NUR FÜR DEN INTERNEN GEBRAUCH"),
   
   shiny::br(),
   
@@ -85,98 +81,20 @@ body <- shinydashboard::dashboardBody(
   
   shinydashboard::tabItems(
     
-    # Dashboard body: Petalen --------------------------------------------------
+    # Dashboard body: tab1 --------------------------------------------------
     
     shinydashboard::tabItem(
       
-      tabName = "petalen",
+      tabName = "tab1",
       
       shiny::fluidRow(
-        
-        shinydashboard::box(title = "KPI für Histogramm",
-                            status = "warning",
-                            width = 2,
-                            shiny::selectInput(
-                              inputId = 'pet_x',
-                              label = 'Petalengröße zum Auswählen:',
-                              choices = c('Petal.Length', 'Petal.Width'),
-                              selected = 'Petal.Length',
-                              multiple = FALSE
-                            )
-        )
-        
-      ),
-      
-      shiny::fluidRow(
-        
-        shinydashboard::box(title = 'Petalengröße Austeilung',
-                            solidHeader = TRUE,
-                            status = 'warning',
-                            width = 10,
-                            plotly::plotlyOutput('pet_plot')
-        )
-        
-      ),
-      
-      shiny::fluidRow(
-        shiny::HTML( paste0( shiny::HTML('&emsp;'),
-                             shiny::tags$img(src = "ols_logo.png", height='50') ) )
+        shinydashboard::box(title = "",
+                            status = "primary",
+                            width = 12,
+                            dataTableOutput("table1"))
       )
       
-    ),
-    
-    # Dashboard body: Sepalen --------------------------------------------------
-    
-    shinydashboard::tabItem(
-      
-      tabName = "sepalen",
-      
-      shiny::fluidRow(
-        
-        shinydashboard::box(title = "KPI für X-Achse",
-                            status = "warning",
-                            width = 2,
-                            shiny::selectInput(
-                              inputId = 'sep_x',
-                              label = 'Sepalengröße zum Auswählen:',
-                              choices = c('Sepal.Length', 'Sepal.Width'),
-                              selected = 'Sepal.Length',
-                              multiple = FALSE
-                            )
-        ),
-        
-        shinydashboard::box(title = "KPI für Y-Achse",
-                            status = "warning",
-                            width = 2,
-                            shiny::selectInput(
-                              inputId = 'sep_y',
-                              label = 'Sepalengröße zum Auswählen:',
-                              choices = c('Sepal.Length', 'Sepal.Width'),
-                              selected = 'Sepal.Width',
-                              multiple = FALSE
-                            )
-        )
-        
-      ),
-      
-      shiny::fluidRow(
-        
-        shinydashboard::box(title = 'Sepalen Attribute',
-                            solidHeader = TRUE,
-                            status = 'warning',
-                            width = 10,
-                            plotly::plotlyOutput('sep_plot')
-        )
-        
-      ),
-      
-      shiny::fluidRow(
-        shiny::HTML( paste0( shiny::HTML('&emsp;'),
-                             shiny::tags$img(src = "ols_logo.png", height='50') ) )
-      )
-      
-    )#,
-    
+    )
     # Dashboard body: Dokumentation --------------------------------------------
     
     # TODO: uncomment following lines once you have a README usable to document
@@ -199,7 +117,7 @@ body <- shinydashboard::dashboardBody(
   
 )
 
-ui <- shinydashboard::dashboardPage(skin = "yellow",
+ui <- shinydashboard::dashboardPage(skin = "blue",
                                     header,
                                     sidebar,
                                     body)

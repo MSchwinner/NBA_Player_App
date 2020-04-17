@@ -1,5 +1,7 @@
 server <- function(input, output, session) {
-  
+
+# Misc --------------------------------------------------------------------
+
   # start message
   shiny::observe({
     shinyWidgets::sendSweetAlert(
@@ -7,12 +9,8 @@ server <- function(input, output, session) {
       title = NULL,
       text = tags$div(HTML(paste0(
         shiny::tags$br(),
-        shiny::tags$h2("Willkommen!"),
-        "Zum starten bitte Input Parameter in der Seitenliste wählen und auf ",
-        shiny::tags$b('Update'), 
-        " klicken. Für eine Gebrauchsanleitung siehe Tab ",
-        shiny::tags$b('Dokumentation'),
-        ".")))
+        shiny::tags$h2("Welcome!")
+        )))
     )
   }) 
   
@@ -20,22 +18,13 @@ server <- function(input, output, session) {
   shiny::observeEvent(input$update, {
     shinyWidgets::sendSweetAlert(
       session = session,
-      title = "Update erfolgreich!",
-      text = "Daten werden neu geladen und Inhalte angepasst.",
+      title = "Update successfull!",
+      text = "",
       type = "success"
     )
   })
   
-  my_df <- shiny::eventReactive(
-    
-    eventExpr = input$update,
-    
-    { my_df <- iris_df %>%
-      {if (length(input$species) == 0) filter(., Species %in% all_species)
-        else filter(., Species %in% input$species)} }
-    
-  )
-  
+  # output panel
   output$userpanel <- shiny::renderUI({
     if (!is.null(session$user)) {
       sidebarUserPanel(
@@ -45,31 +34,29 @@ server <- function(input, output, session) {
     }
   })
   
-  output$pet_plot <- plotly::renderPlotly({
-    
-    pet_plot <- plot_ly(my_df(), x = ~ get(input$pet_x), alpha = 0.6) %>%
-      layout(xaxis = list(title = paste0(input$pet_x, ' in cm')),
-             yaxis = list(title = 'Anzahl'),
-             barmode = 'overlay') %>%
-      add_histogram(color = ~ Species, xbins = list(size = 0.1))
-    
-    pet_plot
-    
-  })
+
+# Data --------------------------------------------------------------------
   
-  output$sep_plot <- plotly::renderPlotly({
+  output$player_photo <- shiny::renderUI(
+    tags$img(src = get_player_photo(player_name = input$players), alt = "photo")
+  )
+
+  my_df <- shiny::reactive(
+
+    # eventExpr = input$update,
     
-    sep_plot <- plot_ly(my_df(), x = ~ get(input$sep_x), y = ~ get(input$sep_y)) %>%
-      layout(xaxis = list(title = paste0(input$sep_x, ' in cm')),
-             yaxis = list(title = paste0(input$sep_y, ' in cm')),
-             legend = list(orientation = 'h', y = 1.3)) %>%
-      add_markers(color = ~ Species,
-                  hoverinfo = 'text',
-                  text = ~ paste0(input$sep_x, ': ', get(input$sep_x), '<br>',
-                                  input$sep_y, ': ', get(input$sep_y)))
+    get_player_data(player_name = input$players,
+                    type = input$data_type,
+                    season_type = input$season_type)
+
+  )
+
+# Plots -------------------------------------------------------------------
+  
+  output$table1 <- renderDataTable({
     
-    sep_plot
-    
+    my_df() %>% 
+      datatable(., rownames = FALSE, options = list(scrollX = TRUE))
   })
   
 }
