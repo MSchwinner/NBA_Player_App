@@ -28,21 +28,21 @@ sidebar <- shinydashboard::dashboardSidebar(
   shiny::selectInput(inputId = 'players',
                      label = 'Player:',
                      choices = players$name,
-                     selected = "LeBron James",
+                     selected = default_player,
                      multiple = FALSE
   ),
   
   shiny::selectInput(inputId = 'data_type',
                      label = 'Data:',
                      choices = c("Base", "Advanced", "Misc", "Scoring", "Usage"),
-                     selected = "Base",
+                     selected = default_type,
                      multiple = FALSE
   ),
   
   shiny::selectInput(inputId = 'season_type',
                      label = 'Season:',
                      choices = c("Regular+Season", "Playoffs"),
-                     selected = "Regular+Season",
+                     selected = default_season,
                      multiple = FALSE
   ),
   
@@ -92,7 +92,22 @@ body <- shinydashboard::dashboardBody(
                             status = "primary",
                             width = 12,
                             dataTableOutput("table1"))
+      ),
+      
+      shiny::selectInput(inputId = 'kpi_ts',
+                         label = 'Variable visualized:',
+                         choices = var_names,
+                         selected = "GP",
+                         multiple = FALSE
+      ),
+      
+      shiny::fluidRow(
+        shinydashboard::box(title = "",
+                            status = "primary",
+                            width = 12,
+                            dygraphOutput("timeseries"))
       )
+      
       
     )
     # Dashboard body: Dokumentation --------------------------------------------

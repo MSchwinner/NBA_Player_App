@@ -47,9 +47,19 @@ server <- function(input, output, session) {
     
     get_player_data(player_name = input$players,
                     type = input$data_type,
-                    season_type = input$season_type)
+                    season_type = input$season_type) %>% 
+      mutate(year = as_date(MAX_GAME_DATE))
 
   )
+  
+
+# Update Inputs -----------------------------------------------------------
+
+  observe({
+    updateSelectInput(session, "kpi_ts",
+                      choices = names(my_df()),
+                      selected = names(my_df()[1]))
+  })
 
 # Plots -------------------------------------------------------------------
   
@@ -58,5 +68,15 @@ server <- function(input, output, session) {
     my_df() %>% 
       datatable(., rownames = FALSE, options = list(scrollX = TRUE))
   })
+  
+  output$timeseries <- renderDygraph(
+
+    
+    my_df() %>% 
+      select(input$kpi_ts) %>%
+      mutate_all(as.numeric) %>% 
+      xts(., order.by = my_df()$year) %>% 
+      dygraph() 
+  )
   
 }
