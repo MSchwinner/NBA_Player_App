@@ -48,7 +48,12 @@ server <- function(input, output, session) {
     get_player_data(player_name = input$players,
                     type = input$data_type,
                     season_type = input$season_type) %>% 
-      mutate(year = as_date(MAX_GAME_DATE))
+      mutate(year = as_date(MAX_GAME_DATE)) %>% 
+      group_by(GROUP_VALUE) %>% 
+      mutate(TEAMCOUNT = n(),
+             TEAMCOUNT_FILTER = ifelse(TEAMCOUNT > 1 & TEAM_ABBREVIATION != 'TOT', 0, 1)) %>% 
+      filter(TEAMCOUNT_FILTER == 1) %>% 
+      ungroup()
 
   )
   
@@ -57,8 +62,8 @@ server <- function(input, output, session) {
 
   observe({
     updateSelectInput(session, "kpi_ts",
-                      choices = names(my_df()),
-                      selected = names(my_df()[1]))
+                      choices = names(my_df() %>% select(-c(1:5))),
+                      selected = names((my_df() %>% select(-c(1:5)))[1]))
   })
 
 # Plots -------------------------------------------------------------------
